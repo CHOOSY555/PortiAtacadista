@@ -4,7 +4,7 @@ import requests
 
 app = Flask(__name__)
 
-@app.route("/api/ofertas", methods=["GET", "POST"])
+@app.route("/ofertas", methods=["GET", "POST"])
 def obter_ofertas():
     # seu código
     # Você pode usar request.json se quiser parâmetros da Alexa, mas não obrigatório
