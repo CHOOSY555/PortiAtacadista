@@ -48,7 +48,7 @@ def obter_ofertas():
 
     return jsonify({
         "bot": "Porti Ofertas",
-        "titulo": "Ofertas vádasdsalidas: 13/06/2025 - 15/06/2025",
+        "titulo": "Ofertas válidass: 13/06/2025 - 15/06/2025",
         "ofertas": ofertas_unicas
     })
 
