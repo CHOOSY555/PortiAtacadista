@@ -10,31 +10,33 @@ def obter_ofertas():
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
 
-    containers_classes = [
-        "slide-offers-one",
-        "slide-offers-two",
-        "slide-offers-three",
-        "slide-offers-four",
-        "offers-products-low-one",
-        "offers-products-low-two",
-        "offers-products-low-three"
-    ]
-
     ofertas = []
 
-    for container_class in containers_classes:
-        containers = soup.find_all("div", class_=container_class)
-        for c in containers:
-            produto = c.find("p", class_="slide-offers-item") or c.find("p", class_="offers-products-low-item")
-            preco = c.find("p", class_="slide-offers-price") or c.find("p", class_="offers-products-low-price")
-
-            if produto and preco:
+    # Coletar do slider principal
+    slide_container = soup.select_one(".slide-offers")
+    if slide_container:
+        for item in slide_container.find_all("div", recursive=False):
+            produto_tag = item.find("p", class_="slide-offers-item")
+            preco_tag = item.find("p", class_="slide-offers-price")
+            if produto_tag and preco_tag:
                 ofertas.append({
-                    "produto": produto.get_text(strip=True),
-                    "preco": preco.get_text(strip=True)
+                    "produto": produto_tag.get_text(strip=True),
+                    "preco": preco_tag.get_text(strip=True)
                 })
 
-    # Remover duplicatas
+    # Coletar da lista de produtos adicionais
+    low_container = soup.select_one(".offers-products-low")
+    if low_container:
+        for item in low_container.find_all("div", recursive=False):
+            produto_tag = item.find("p", class_="offers-products-low-item")
+            preco_tag = item.find("p", class_="offers-products-low-price")
+            if produto_tag and preco_tag:
+                ofertas.append({
+                    "produto": produto_tag.get_text(strip=True),
+                    "preco": preco_tag.get_text(strip=True)
+                })
+
+    # Remover duplicatas por nome de produto
     vistos = set()
     ofertas_unicas = []
     for o in ofertas:
