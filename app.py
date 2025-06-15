@@ -1,11 +1,12 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from bs4 import BeautifulSoup
 import requests
 
 app = Flask(__name__)
 
-@app.route("/api/ofertas", methods=["GET"])
+@app.route("/api/ofertas", methods=["POST"])
 def obter_ofertas():
+    # Você pode usar request.json se quiser parâmetros da Alexa, mas não obrigatório
     url = "https://portiatacadista.com.br/"
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
@@ -36,7 +37,7 @@ def obter_ofertas():
                     "preco": preco_tag.get_text(strip=True)
                 })
 
-    # Remover duplicatas por nome de produto
+    # Remover duplicatas por nome do produto
     vistos = set()
     ofertas_unicas = []
     for o in ofertas:
@@ -49,6 +50,7 @@ def obter_ofertas():
         "titulo": "Ofertas válidas: 13/06/2025 - 15/06/2025",
         "ofertas": ofertas_unicas
     })
+
 
 if __name__ == "__main__":
     app.run(debug=True)
