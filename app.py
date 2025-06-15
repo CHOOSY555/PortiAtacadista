@@ -1,35 +1,52 @@
-import requests
+from flask import Flask, jsonify
 from bs4 import BeautifulSoup
+import requests
 
-url = 'https://portiatacadista.com.br/'
+app = Flask(__name__)
 
-response = requests.get(url)
-soup = BeautifulSoup(response.text, 'html.parser')
+@app.route("/api/ofertas", methods=["GET"])
+def obter_ofertas():
+    url = "https://portiatacadista.com.br/"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, "html.parser")
 
-ofertas = []
+    containers_classes = [
+        "slide-offers-one",
+        "slide-offers-two",
+        "slide-offers-three",
+        "slide-offers-four",
+        "offers-products-low-one",
+        "offers-products-low-two",
+        "offers-products-low-three"
+    ]
 
-# Exemplo para ofertas em destaque (container-slide-offers)
-slide_offers = soup.select('.container-slide-offers .slide-offers > div')
-for offer in slide_offers:
-    produto = offer.select_one('.slide-offers-item')
-    preco = offer.select_one('.slide-offers-price')
-    if produto and preco:
-        ofertas.append({
-            'produto': produto.text.strip(),
-            'preco': preco.text.strip()
-        })
+    ofertas = []
 
-# Exemplo para outra seção (container-offers-products-low)
-low_offers = soup.select('.container-offers-products-low .offers-products-low > div')
-for offer in low_offers:
-    produto = offer.select_one('.offers-products-low-item')
-    preco = offer.select_one('.offers-products-low-price')
-    if produto and preco:
-        ofertas.append({
-            'produto': produto.text.strip(),
-            'preco': preco.text.strip()
-        })
+    for container_class in containers_classes:
+        containers = soup.find_all("div", class_=container_class)
+        for c in containers:
+            produto = c.find("p", class_="slide-offers-item") or c.find("p", class_="offers-products-low-item")
+            preco = c.find("p", class_="slide-offers-price") or c.find("p", class_="offers-products-low-price")
 
-print(f"Total ofertas encontradas: {len(ofertas)}")
-for o in ofertas:
-    print(f"{o['produto']} - {o['preco']}")
+            if produto and preco:
+                ofertas.append({
+                    "produto": produto.get_text(strip=True),
+                    "preco": preco.get_text(strip=True)
+                })
+
+    # Remover duplicatas
+    vistos = set()
+    ofertas_unicas = []
+    for o in ofertas:
+        if o["produto"] not in vistos:
+            vistos.add(o["produto"])
+            ofertas_unicas.append(o)
+
+    return jsonify({
+        "bot": "Porti Ofertas",
+        "titulo": "Ofertas válidas: 13/06/2025 - 15/06/2025",
+        "ofertas": ofertas_unicas
+    })
+
+if __name__ == "__main__":
+    app.run(debug=True)
