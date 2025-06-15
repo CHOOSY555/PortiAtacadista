@@ -47,8 +47,8 @@ def obter_ofertas():
             ofertas_unicas.append(o)
 
     return jsonify({
-        "bot": "Porti Ofertass",
-        "titulo": "Ofertas válidas: 13/06/2025 - 15/06/2025",
+        "bot": "Porti Ofertas",
+        "titulo": "Ofertas vádasdsalidas: 13/06/2025 - 15/06/2025",
         "ofertas": ofertas_unicas
     })
 
