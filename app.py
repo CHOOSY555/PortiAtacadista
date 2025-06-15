@@ -1,14 +1,3 @@
-from flask import Flask, jsonify
-import requests
-from bs4 import BeautifulSoup
-import os
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "API Porti Ofertas está rodando!"
-
 @app.route('/ofertas')
 def get_ofertas():
     url = 'https://portiatacadista.com.br/'
@@ -20,20 +9,24 @@ def get_ofertas():
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
+    # Pega o título das ofertas
+    titulo = soup.select_one('.container-slide-offers > h3')
+    titulo_texto = titulo.get_text(strip=True) if titulo else "Ofertas"
+
     ofertas = []
-    # Esse seletor CSS captura os textos das ofertas (ajuste conforme a estrutura real do site)
-    for item in soup.select('.texto-info-produto'):
-        texto = item.get_text(strip=True)
-        if texto and len(ofertas) < 10:
-            ofertas.append(texto)
+    # Vamos buscar elementos que podem conter as ofertas dentro do container
+    container = soup.select_one('.container-slide-offers')
+    if container:
+        # exemplo: buscar textos dentro de elementos filhos, como divs ou spans
+        for oferta_item in container.select('p, span, div'):
+            texto = oferta_item.get_text(strip=True)
+            if texto and len(ofertas) < 10:
+                ofertas.append(texto)
 
     nome_bot = os.environ.get("NOME_BOT", "Porti Ofertas")
 
     return jsonify({
         "bot": nome_bot,
+        "titulo": titulo_texto,
         "ofertas": ofertas
     })
-
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
